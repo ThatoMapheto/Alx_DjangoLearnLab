@@ -1,1 +1,1 @@
-# LibraryProject
+# LibraryProject Django Configuration
