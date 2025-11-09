@@ -13,14 +13,6 @@
         <li>{{ book.title }} by {{ book.author.name }}</li>
         {% endfor %}
     </ul>
-    {% if user.is_authenticated %}
-    <p><a href="{% url 'logout' %}">Logout</a></p>
-    {% if perms.relationship_app.can_add_book %}
-    <p><a href="{% url 'add_book' %}">Add New Book</a></p>
-    {% endif %}
-    {% else %}
-    <p><a href="{% url 'login' %}">Login</a> | <a href="{% url 'register' %}">Register</a></p>
-    {% endif %}
 </body>
 
 </html>
