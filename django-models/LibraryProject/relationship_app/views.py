@@ -4,25 +4,20 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.contrib import messages
-from .models import Book, Library, UserProfile
+from .models import Book, UserProfile
+from .models import Library
 from .forms import BookForm
-
-# Function-based view
 
 
 def list_books(request):
     books = Book.objects.all()
     return render(request, 'relationship_app/list_books.html', {'books': books})
 
-# Class-based view
-
 
 class LibraryDetailView(DetailView):
     model = Library
     template_name = 'relationship_app/library_detail.html'
     context_object_name = 'library'
-
-# Authentication views
 
 
 def login_view(request):
@@ -60,8 +55,6 @@ def logout_view(request):
     messages.info(request, 'You have been logged out.')
     return render(request, 'relationship_app/logout.html')
 
-# Role check functions
-
 
 def is_admin(user):
     return user.is_authenticated and hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
@@ -73,8 +66,6 @@ def is_librarian(user):
 
 def is_member(user):
     return user.is_authenticated and hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
-
-# Role-based views
 
 
 @user_passes_test(is_admin, login_url='/login/')
@@ -90,8 +81,6 @@ def librarian_view(request):
 @user_passes_test(is_member, login_url='/login/')
 def member_view(request):
     return render(request, 'relationship_app/member_view.html')
-
-# Permission-based views
 
 
 @permission_required('relationship_app.can_add_book', login_url='/login/')
