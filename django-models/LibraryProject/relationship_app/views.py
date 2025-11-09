@@ -7,12 +7,11 @@ from django.contrib import messages
 from .models import Book, Library, UserProfile
 from .forms import BookForm
 
-# Function-based view - MUST INCLUDE THESE EXACT PATTERNS
+# Function-based view
 
 
 def list_books(request):
-    books = Book.objects.all()  # Required pattern: "Book.objects.all()"
-    # Required pattern: "relationship_app/list_books.html"
+    books = Book.objects.all()
     return render(request, 'relationship_app/list_books.html', {'books': books})
 
 # Class-based view
