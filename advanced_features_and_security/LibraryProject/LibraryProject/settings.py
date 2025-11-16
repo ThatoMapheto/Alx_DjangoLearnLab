@@ -19,7 +19,8 @@ SECRET_KEY = config('SECRET_KEY', default='your-production-secret-key-here')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Allowed hosts for production - restrict to your domain
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,[::1]').split(',')
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS', default='localhost,127.0.0.1,[::1]').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'csp',  # Content Security Policy
     'secure_app',  # Your custom app
+    'Bookshel',
 ]
 
 MIDDLEWARE = [
@@ -113,7 +115,8 @@ X_FRAME_OPTIONS = 'DENY'  # Prevent site from being embedded in iframe
 # SSL/HTTPS settings (for production)
 CSRF_COOKIE_SECURE = True  # Ensure CSRF cookies are sent over HTTPS only
 SESSION_COOKIE_SECURE = True  # Ensure session cookies are sent over HTTPS only
-SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)  # Redirect HTTP to HTTPS
+SECURE_SSL_REDIRECT = config(
+    'SECURE_SSL_REDIRECT', default=True, cast=bool)  # Redirect HTTP to HTTPS
 
 # HSTS settings
 SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -122,8 +125,10 @@ SECURE_HSTS_PRELOAD = True
 
 # Content Security Policy settings
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")  # Remove 'unsafe-inline' for production
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")   # Remove 'unsafe-inline' for production
+# Remove 'unsafe-inline' for production
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
+# Remove 'unsafe-inline' for production
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
 CSP_IMG_SRC = ("'self'", "data:", "https:")
 CSP_FONT_SRC = ("'self'",)
 CSP_CONNECT_SRC = ("'self'",)
@@ -132,11 +137,13 @@ CSP_BASE_URI = ("'self'",)
 CSP_FRAME_ANCESTORS = ("'none'",)  # Equivalent to X-Frame-Options: DENY
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000,http://127.0.0.1:8000').split(',')
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS', default='http://localhost:8000,http://127.0.0.1:8000').split(',')
 
 # Session security
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
-CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF token (needed for AJAX)
+# Allow JavaScript to read CSRF token (needed for AJAX)
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
