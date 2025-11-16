@@ -32,9 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'csp',  # Content Security Policy
     'secure_app',  # Your custom app
-    'Bookshelf',
+    'bookshelf',
 ]
-AUTH_USER_MODEL = 'Bookshelf.CustomUser'
+AUTH_USER_MODEL = 'bookshelf.CustomUser'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'csp.middleware.CSPMiddleware',  # CSP middleware
