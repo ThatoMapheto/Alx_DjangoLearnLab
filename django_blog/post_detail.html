@@ -1,0 +1,55 @@
+<!-- Add this after the post content section -->
+<hr>
+<div class="card mt-4">
+    <div class="card-header">
+        <h4>Comments ({{ comments.count }})</h4>
+    </div>
+    <div class="card-body">
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_comment' post.pk %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ comment_form.content }}
+                {% for error in comment_form.content.errors %}
+                <div class="text-danger">{{ error }}</div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Add Comment</button>
+        </form>
+        {% else %}
+        <p class="text-muted">
+            <a href="{% url 'login' %}">Login</a> to leave a comment
+        </p>
+        {% endif %}
+
+        <hr>
+
+        {% for comment in comments %}
+        <div class="card mb-2 {% if comment.author == post.author %}border-primary{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>{{ comment.author.username }}</strong>
+                        {% if comment.author == post.author %}
+                        <span class="badge bg-primary">Author</span>
+                        {% endif %}
+                        <small class="text-muted">{{ comment.created_at|date:"F d, Y H:i" }}</small>
+                    </div>
+                    {% if user == comment.author %}
+                    <form method="post" action="{% url 'delete_comment' comment.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to delete this comment?')">
+                            Delete
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                <p class="card-text mt-2">{{ comment.content|linebreaks }}</p>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No comments yet. Be the first to comment!</p>
+        {% endfor %}
+    </div>
+</div>
