@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Django Blog{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Your Profile</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Your Blog Posts</h3>
+            </div>
+            <div class="card-body">
+                {% if user_posts %}
+                <ul class="list-group">
+                    {% for post in user_posts %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
+                        <span class="badge bg-secondary">{{ post.published_date|date:"M d, Y" }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">You haven't written any posts yet.</p>
+                <a href="{% url 'post_create' %}" class="btn btn-primary">Write Your First Post</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Account Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Member since:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+                <hr>
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
