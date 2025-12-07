@@ -4,14 +4,19 @@ Django settings for advanced_api_project project.
 
 from pathlib import Path
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-advanced-api-project-secret-key-12345'
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-your-secret-key-here'
 
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
+
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,9 +24,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
+    'rest_framework',  # Django REST Framework
+    'api',  # Our custom API app
     'django_filters',
-    'api',
 ]
 
 MIDDLEWARE = [
@@ -42,11 +47,11 @@ TEMPLATES = [
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+            'contextProcessors': [
+                'django.template.contextProcessors.debug',
+                'django.template.contextProcessors.request',
+                'django.contrib.auth.contextProcessors.auth',
+                'django.contrib.messages.contextProcessors.messages',
             ],
         },
     },
@@ -54,6 +59,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'advanced_api_project.wsgi.application'
 
+
+# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -61,6 +68,8 @@ DATABASES = {
     }
 }
 
+
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -76,25 +85,84 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+
+# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Django REST Framework configuration
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ],
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
 }
+
+"""
+Test factories for creating model instances in tests.
+
+This module provides factory classes to easily create test data
+for Author and Book models without duplicating creation logic.
+"""
+
+from django.contrib.auth.models import User
+from factory import DjangoModelFactory, Faker, SubFactory, post_generation
+from factory.fuzzy import FuzzyInteger
+from ..models import Author, Book
+import factory
+
+
+class UserFactory(DjangoModelFactory):
+    """
+    Factory for creating User instances for authentication testing.
+    """
+    class Meta:
+        model = User
+
+    username = Faker('user_name')
+    email = Faker('email')
+    password = factory.PostGenerationMethodCall('set_password', 'testpassword123')
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        """Override to use create_user method for proper password hashing."""
+        manager = cls._get_manager(model_class)
+        return manager.create_user(*args, **kwargs)
+
+
+class AuthorFactory(DjangoModelFactory):
+    """
+    Factory for creating Author instances with realistic test data.
+    """
+    class Meta:
+        model = Author
+
+    name = Faker('name')
+
+
+class BookFactory(DjangoModelFactory):
+    """
+    Factory for creating Book instances with realistic test data.
+    """
+    class Meta:
+        model = Book
+
+    title = Faker('sentence', nb_words=4)
+    publication_year = FuzzyInteger(1900, 2023)
+    author = SubFactory(AuthorFactory)
+    
