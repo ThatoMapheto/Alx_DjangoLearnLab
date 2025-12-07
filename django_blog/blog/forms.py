@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from taggit.forms import TagField  # Import TagField from taggit
+from taggit.forms import TagField, TagWidget  # Import TagWidget
 from .models import Post, Comment
 
 
@@ -29,7 +29,11 @@ class UserUpdateForm(forms.ModelForm):
 
 
 class PostForm(forms.ModelForm):
-    tags = TagField(required=False, help_text="Enter tags separated by commas")
+    tags = TagField(
+        required=False,
+        help_text="Enter tags separated by commas",
+        widget=TagWidget()  # Add TagWidget() here
+    )
 
     class Meta:
         model = Post
@@ -40,7 +44,7 @@ class PostForm(forms.ModelForm):
         self.fields['title'].widget.attrs.update({'class': 'form-control'})
         self.fields['content'].widget.attrs.update(
             {'class': 'form-control', 'rows': 10})
-        self.fields['tags'].widget.attrs.update({'class': 'form-control'})
+        # Don't update tags widget attrs here since TagWidget() handles it
 
 
 class CommentForm(forms.ModelForm):
