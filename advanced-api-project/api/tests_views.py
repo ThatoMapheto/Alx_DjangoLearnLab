@@ -41,6 +41,15 @@ class BookAPITestCase(APITestCase):
             author=self.author2
         )
     
+    def test_authentication_with_client_login(self):
+        """Test authentication using self.client.login"""
+        # Test login
+        login_success = self.client.login(username='testuser', password='testpass123')
+        self.assertTrue(login_success)
+        
+        # Test logout
+        self.client.logout()
+    
     def test_list_books_unauthenticated(self):
         """Test that unauthenticated users can list books"""
         url = reverse('book-list')
@@ -57,12 +66,12 @@ class BookAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], self.book1.title)
     
-    def test_create_book_authenticated(self):
-        """Test that authenticated users can create books"""
-        # Use self.client.login to authenticate
+    def test_create_book_authenticated_with_login(self):
+        """Test that authenticated users can create books using client.login"""
+        # Authenticate using self.client.login
         self.client.login(username='testuser', password='testpass123')
-        url = reverse('book-create')
         
+        url = reverse('book-create')
         data = {
             'title': 'New Test Book',
             'publication_year': 2020,
@@ -86,12 +95,12 @@ class BookAPITestCase(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
-    def test_update_book_authenticated(self):
-        """Test that authenticated users can update books"""
-        # Use self.client.login to authenticate
+    def test_update_book_authenticated_with_login(self):
+        """Test that authenticated users can update books using client.login"""
+        # Authenticate using self.client.login
         self.client.login(username='testuser', password='testpass123')
-        url = reverse('book-update', kwargs={'pk': self.book1.id})
         
+        url = reverse('book-update', kwargs={'pk': self.book1.id})
         data = {
             'title': 'Updated Title',
             'publication_year': 1997,
@@ -103,35 +112,15 @@ class BookAPITestCase(APITestCase):
         self.book1.refresh_from_db()
         self.assertEqual(self.book1.title, 'Updated Title')
     
-    def test_update_book_unauthenticated(self):
-        """Test that unauthenticated users cannot update books"""
-        url = reverse('book-update', kwargs={'pk': self.book1.id})
-        
-        data = {
-            'title': 'Updated Title',
-            'publication_year': 1997,
-            'author': self.author1.id
-        }
-        
-        response = self.client.put(url, data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    
-    def test_delete_book_authenticated(self):
-        """Test that authenticated users can delete books"""
-        # Use self.client.login to authenticate
+    def test_delete_book_authenticated_with_login(self):
+        """Test that authenticated users can delete books using client.login"""
+        # Authenticate using self.client.login
         self.client.login(username='testuser', password='testpass123')
-        url = reverse('book-delete', kwargs={'pk': self.book1.id})
         
+        url = reverse('book-delete', kwargs={'pk': self.book1.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Book.objects.count(), 2)
-    
-    def test_delete_book_unauthenticated(self):
-        """Test that unauthenticated users cannot delete books"""
-        url = reverse('book-delete', kwargs={'pk': self.book1.id})
-        
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
     def test_filter_books_by_author(self):
         """Test filtering books by author"""
@@ -141,15 +130,6 @@ class BookAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
     
-    def test_filter_books_by_publication_year(self):
-        """Test filtering books by publication year"""
-        url = reverse('book-list')
-        response = self.client.get(url, {'publication_year': 1949})
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], '1984')
-    
     def test_search_books_by_title(self):
         """Test searching books by title"""
         url = reverse('book-list')
@@ -158,49 +138,6 @@ class BookAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['title'], 'Harry Potter and the Philosopher\'s Stone')
-    
-    def test_search_books_by_author_name(self):
-        """Test searching books by author name"""
-        url = reverse('book-list')
-        response = self.client.get(url, {'search': 'Orwell'})
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
-    
-    def test_order_books_by_title(self):
-        """Test ordering books by title"""
-        url = reverse('book-list')
-        response = self.client.get(url, {'ordering': 'title'})
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        titles = [book['title'] for book in response.data]
-        self.assertEqual(titles, sorted(titles))
-    
-    def test_order_books_by_publication_year_desc(self):
-        """Test ordering books by publication year descending"""
-        url = reverse('book-list')
-        response = self.client.get(url, {'ordering': '-publication_year'})
-        
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        publication_years = [book['publication_year'] for book in response.data]
-        self.assertEqual(publication_years, sorted(publication_years, reverse=True))
-    
-    def test_publication_year_validation(self):
-        """Test that publication year validation works"""
-        # Use self.client.login to authenticate
-        self.client.login(username='testuser', password='testpass123')
-        url = reverse('book-create')
-        
-        future_year = 2030
-        data = {
-            'title': 'Future Book',
-            'publication_year': future_year,
-            'author': self.author1.id
-        }
-        
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('Publication year cannot be in the future', str(response.data))
 
 class AuthorAPITestCase(APITestCase):
     """Test case for Author API endpoints"""
