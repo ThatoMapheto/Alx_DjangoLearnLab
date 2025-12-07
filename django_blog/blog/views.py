@@ -9,14 +9,12 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django.db.models import Q
-from taggit.models import Tag  # Import Tag from taggit
+from taggit.models import Tag
 from .models import Post, Comment
 from .forms import (
     CustomUserCreationForm, UserUpdateForm,
     PostForm, CommentForm, SearchForm
 )
-
-# Authentication Views (keep as is)
 
 
 def register_view(request):
@@ -69,8 +67,6 @@ def profile_view(request):
         'user_posts': user_posts
     }
     return render(request, 'blog/profile.html', context)
-
-# Post CRUD Views
 
 
 class PostListView(ListView):
@@ -138,9 +134,8 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         messages.success(request, 'Your post has been deleted!')
         return super().delete(request, *args, **kwargs)
 
+
 # Comment CRUD Views
-
-
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = Comment
     form_class = CommentForm
@@ -197,9 +192,8 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy('post_detail', kwargs={'pk': self.object.post.pk})
 
+
 # Keep old function-based views for backward compatibility
-
-
 @login_required
 def add_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -223,9 +217,32 @@ def delete_comment(request, pk):
         messages.success(request, 'Your comment has been deleted!')
     return redirect('post_detail', pk=post_pk)
 
-# Tagging and Search Views - Updated for django-taggit
+
+# Tagging and Search Views
+class PostByTagListView(ListView):
+    model = Post
+    template_name = 'blog/posts_by_tag.html'
+    context_object_name = 'posts'
+    paginate_by = 5
+
+    def get_queryset(self):
+        tag_slug = self.kwargs.get('tag_slug')
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        return Post.objects.filter(tags__in=[tag])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tag_slug = self.kwargs.get('tag_slug')
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        context['tag'] = tag
+        context['search_form'] = SearchForm()
+        # Get all tags with count of posts
+        tags = Tag.objects.all()
+        context['tags'] = tags[:10]
+        return context
 
 
+# Keep the old function-based view for backward compatibility
 def posts_by_tag(request, tag_name):
     tag = get_object_or_404(Tag, name=tag_name)
     posts = Post.objects.filter(tags__name__in=[tag_name])

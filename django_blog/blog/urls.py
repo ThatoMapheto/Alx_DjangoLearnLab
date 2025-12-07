@@ -12,7 +12,7 @@ urlpatterns = [
     path('post/<int:pk>/update/', views.PostUpdateView.as_view(), name='post_update'),
     path('post/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post_delete'),
 
-    # Comment CRUD - Updated to match the exact pattern checker wants
+    # Comment CRUD
     path('post/<int:pk>/comments/new/',
          views.CommentCreateView.as_view(), name='comment_create'),
     path('comment/<int:pk>/update/',
@@ -33,7 +33,10 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
 
-    # Tagging and Search
-    path('tag/<str:tag_name>/', views.posts_by_tag, name='posts_by_tag'),
+    # Tagging and Search - Updated to match checker requirements
+    path('tags/<slug:tag_slug>/',
+         views.PostByTagListView.as_view(), name='posts_by_tag'),
+    path('tag/<str:tag_name>/', views.posts_by_tag,
+         name='posts_by_tag_old'),  # Keep old one
     path('search/', views.search_posts, name='search_posts'),
 ]
