@@ -6,16 +6,24 @@ urlpatterns = [
     # Main pages
     path('', views.PostListView.as_view(), name='post_list'),
 
-    # Post CRUD - Updated to match checker requirements
+    # Post CRUD
     path('post/<int:pk>/', views.PostDetailView.as_view(), name='post_detail'),
     path('post/new/', views.PostCreateView.as_view(), name='post_create'),
-    path('post/<int:pk>/update/', views.PostUpdateView.as_view(),
-         name='post_update'),  # Changed from 'edit' to 'update'
+    path('post/<int:pk>/update/', views.PostUpdateView.as_view(), name='post_update'),
     path('post/<int:pk>/delete/', views.PostDeleteView.as_view(), name='post_delete'),
 
-    # Comments
+    # Comment CRUD - Updated to use class-based views
+    path('comment/<int:pk>/create/',
+         views.CommentCreateView.as_view(), name='comment_create'),
+    path('comment/<int:pk>/update/',
+         views.CommentUpdateView.as_view(), name='comment_update'),
+    path('comment/<int:pk>/delete/',
+         views.CommentDeleteView.as_view(), name='comment_delete'),
+
+    # Keep old URLs for backward compatibility
     path('post/<int:pk>/comment/', views.add_comment, name='add_comment'),
-    path('comment/<int:pk>/delete/', views.delete_comment, name='delete_comment'),
+    path('comment/<int:pk>/delete_func/',
+         views.delete_comment, name='delete_comment_func'),
 
     # Authentication
     path('register/', views.register_view, name='register'),
