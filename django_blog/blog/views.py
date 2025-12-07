@@ -9,7 +9,8 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django.db.models import Q
-from .models import Post, Comment, Tag
+from taggit.models import Tag  # Import Tag from taggit
+from .models import Post, Comment
 from .forms import (
     CustomUserCreationForm, UserUpdateForm,
     PostForm, CommentForm, SearchForm
@@ -69,7 +70,7 @@ def profile_view(request):
     }
     return render(request, 'blog/profile.html', context)
 
-# Post CRUD Views (keep as is)
+# Post CRUD Views
 
 
 class PostListView(ListView):
@@ -81,7 +82,9 @@ class PostListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_form'] = SearchForm()
-        context['tags'] = Tag.objects.all()[:10]
+        # Get all tags with count of posts
+        tags = Tag.objects.all()
+        context['tags'] = tags[:10]  # Show top 10 tags
         return context
 
 
@@ -135,7 +138,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         messages.success(request, 'Your post has been deleted!')
         return super().delete(request, *args, **kwargs)
 
-# Comment CRUD Views - Updated to class-based views
+# Comment CRUD Views
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -144,7 +147,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     template_name = 'blog/comment_form.html'
 
     def form_valid(self, form):
-        # Get the post_id from URL parameter 'pk'
         post_id = self.kwargs.get('pk')
         post = get_object_or_404(Post, pk=post_id)
         form.instance.post = post
@@ -195,7 +197,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy('post_detail', kwargs={'pk': self.object.post.pk})
 
-# Keep the old function-based views for backward compatibility
+# Keep old function-based views for backward compatibility
 
 
 @login_required
@@ -221,12 +223,12 @@ def delete_comment(request, pk):
         messages.success(request, 'Your comment has been deleted!')
     return redirect('post_detail', pk=post_pk)
 
-# Tagging and Search Views (keep as is)
+# Tagging and Search Views - Updated for django-taggit
 
 
 def posts_by_tag(request, tag_name):
     tag = get_object_or_404(Tag, name=tag_name)
-    posts = tag.posts.all()
+    posts = Post.objects.filter(tags__name__in=[tag_name])
     context = {
         'tag': tag,
         'posts': posts,
