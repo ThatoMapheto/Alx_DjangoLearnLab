@@ -19,7 +19,8 @@ class UserRegistrationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        token = Token.objects.create(user=user)
+        # Get the token that was created in the serializer
+        token = Token.objects.get(user=user)
         
         return Response({
             'user': UserProfileSerializer(user).data,
