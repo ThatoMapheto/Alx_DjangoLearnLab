@@ -88,3 +88,40 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'accounts.User'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Production settings (can be overridden by environment variables)
+import os
+
+# Read from environment variables with defaults
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = os.getenv('SECRET_KEY', SECRET_KEY)
+
+# Allowed hosts from environment
+allowed_hosts = os.getenv('ALLOWED_HOSTS', '')
+if allowed_hosts:
+    ALLOWED_HOSTS = allowed_hosts.split(',')
+
+# Database from environment (for production)
+if 'DATABASE_URL' in os.environ:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+
+# Static files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Security settings for production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
