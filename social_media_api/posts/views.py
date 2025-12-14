@@ -57,3 +57,53 @@ class FeedView(generics.ListAPIView):
         following_users = self.request.user.following.all()
         # Return posts from those users, ordered by creation date (newest first)
         return Post.objects.filter(author__in=following_users).order_by('-created_at')
+
+class LikeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, pk):
+        """Like a post"""
+        try:
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if already liked
+        if Like.objects.filter(post=post, user=request.user).exists():
+            return Response(
+                {'error': 'You have already liked this post'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create like
+        like = Like.objects.create(post=post, user=request.user)
+        
+        # Create notification (simplified - would need notifications app import)
+        # In a real app: create_notification(post.author, request.user, 'like', post)
+        
+        return Response({
+            'message': 'Post liked successfully',
+            'like_id': like.id,
+            'likes_count': post.likes.count()
+        }, status=status.HTTP_201_CREATED)
+    
+    def delete(self, request, pk):
+        """Unlike a post"""
+        try:
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return Response({'error': 'Post not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Delete like if exists
+        deleted_count, _ = Like.objects.filter(post=post, user=request.user).delete()
+        
+        if deleted_count > 0:
+            return Response({
+                'message': 'Post unliked successfully',
+                'likes_count': post.likes.count()
+            })
+        else:
+            return Response(
+                {'error': 'You have not liked this post'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
